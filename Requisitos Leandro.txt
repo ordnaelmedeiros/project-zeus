@@ -1,0 +1,7 @@
+Aplicação WS Rest
+CRUD Normal
+Help Automatico a partir da Arquitetura
+Dicionário de Dados
+Pesquisas Complexas
+Multi tenancy
+Base off
