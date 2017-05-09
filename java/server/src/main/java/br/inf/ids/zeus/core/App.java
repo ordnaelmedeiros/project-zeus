@@ -7,7 +7,9 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 
-@ApplicationPath("/rest")
+import br.inf.ids.zeus.core.dao.EntityManagerUtil;
+
+@ApplicationPath("/api")
 public class App extends Application {
 	
 	@Context
@@ -15,6 +17,13 @@ public class App extends Application {
 	
 	@Override
 	public Set<Object> getSingletons() {
+		
+		try {
+			EntityManagerUtil.getEntityManager();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		return super.getSingletons();
 	}
 	

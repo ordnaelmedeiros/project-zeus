@@ -3,102 +3,107 @@ package br.inf.ids.zeus.app.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Table
+@Entity
 public class ObjetoTeste {
 	
-	private Integer vInteger;
-	private Long vLong;
-	private Boolean vBooleanTrue;
-	private Boolean vBooleanFalse;
-	private Double vDouble;
-	private Float vFloat;
-	private BigDecimal vBigDecimal;
-	private String vString;
-	private LocalDate vLocalDate;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long vlong;
 	
-	public void criar() {
-		
-		this.vInteger = 1;
-		this.vLong = 2l;
-		this.vBooleanTrue = true;
-		this.vBooleanFalse = false;
-		this.vDouble = 1.2;
-		this.vFloat = 2.33f;
-		this.vBigDecimal = new BigDecimal("3.444");
-		this.vString = "Não viva para que a sua presença seja notada, mas para que a sua falta seja sentida.\nBob Marley";
-		this.vLocalDate = LocalDate.of(1986, 9, 17);
-		
+	@Column(nullable=false)
+	private Integer vinteger;
+	
+	@Column
+	private Boolean vbooleantrue;
+	
+	@Column
+	private Boolean vbooleanfalse;
+	
+	@Column
+	private Double vdouble;
+	
+	@Column
+	private Float vfloat;
+	
+	@Column(precision=35, scale=10)
+	private BigDecimal vbigdecimal;
+	
+	@Column(length=100)
+	private String vstring;
+	
+	@Column(columnDefinition="text")
+	private String vmemo;
+	
+	@Column
+	private LocalDate vlocaldate;
+	
+	public Integer getVinteger() {
+		return vinteger;
 	}
-
-	public Integer getvInteger() {
-		return vInteger;
+	public void setVinteger(Integer vinteger) {
+		this.vinteger = vinteger;
 	}
-
-	public void setvInteger(Integer vInteger) {
-		this.vInteger = vInteger;
+	public Long getVlong() {
+		return vlong;
 	}
-
-	public Long getvLong() {
-		return vLong;
+	public void setVlong(Long vlong) {
+		this.vlong = vlong;
 	}
-
-	public void setvLong(Long vLong) {
-		this.vLong = vLong;
+	public Boolean getVbooleantrue() {
+		return vbooleantrue;
 	}
-
-	public Boolean getvBooleanTrue() {
-		return vBooleanTrue;
+	public void setVbooleantrue(Boolean vbooleantrue) {
+		this.vbooleantrue = vbooleantrue;
 	}
-
-	public void setvBooleanTrue(Boolean vBooleanTrue) {
-		this.vBooleanTrue = vBooleanTrue;
+	public Boolean getVbooleanfalse() {
+		return vbooleanfalse;
 	}
-
-	public Boolean getvBooleanFalse() {
-		return vBooleanFalse;
+	public void setVbooleanfalse(Boolean vbooleanfalse) {
+		this.vbooleanfalse = vbooleanfalse;
 	}
-
-	public void setvBooleanFalse(Boolean vBooleanFalse) {
-		this.vBooleanFalse = vBooleanFalse;
+	public Double getVdouble() {
+		return vdouble;
 	}
-
-	public Double getvDouble() {
-		return vDouble;
+	public void setVdouble(Double vdouble) {
+		this.vdouble = vdouble;
 	}
-
-	public void setvDouble(Double vDouble) {
-		this.vDouble = vDouble;
+	public Float getVfloat() {
+		return vfloat;
 	}
-
-	public Float getvFloat() {
-		return vFloat;
+	public void setVfloat(Float vfloat) {
+		this.vfloat = vfloat;
 	}
-
-	public void setvFloat(Float vFloat) {
-		this.vFloat = vFloat;
+	public BigDecimal getVbigdecimal() {
+		return vbigdecimal;
 	}
-
-	public BigDecimal getvBigDecimal() {
-		return vBigDecimal;
+	public void setVbigdecimal(BigDecimal vbigdecimal) {
+		this.vbigdecimal = vbigdecimal;
 	}
-
-	public void setvBigDecimal(BigDecimal vBigDecimal) {
-		this.vBigDecimal = vBigDecimal;
+	public String getVstring() {
+		return vstring;
 	}
-
-	public String getvString() {
-		return vString;
+	public void setVstring(String vstring) {
+		this.vstring = vstring;
 	}
-
-	public void setvString(String vString) {
-		this.vString = vString;
+	public LocalDate getVlocaldate() {
+		return vlocaldate;
 	}
-
-	public LocalDate getvLocalDate() {
-		return vLocalDate;
+	public void setVlocaldate(LocalDate vlocaldate) {
+		this.vlocaldate = vlocaldate;
 	}
-
-	public void setvLocalDate(LocalDate vLocalDate) {
-		this.vLocalDate = vLocalDate;
+	public String getVmemo() {
+		return vmemo;
+	}
+	public void setVmemo(String vmemo) {
+		this.vmemo = vmemo;
 	}
 	
 }

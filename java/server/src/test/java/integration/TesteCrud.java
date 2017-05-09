@@ -6,7 +6,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 public abstract class TesteCrud<Model> {
 
