@@ -6,6 +6,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import br.inf.ids.zeus.app.entity.Insumo;
+import br.inf.ids.zeus.app.entity.InsumoGrupo;
 import br.inf.ids.zeus.app.entity.ObjetoTeste;
 
 public class EntityManagerUtil {
@@ -34,6 +35,7 @@ public class EntityManagerUtil {
 		
 		cfg.addAnnotatedClass(ObjetoTeste.class);
 		cfg.addAnnotatedClass(Insumo.class);
+		cfg.addAnnotatedClass(InsumoGrupo.class);
 		//cfg.addAnnotatedClass(Acesso.class);
 		//cfg.addAnnotatedClass(Sessao.class);
 		

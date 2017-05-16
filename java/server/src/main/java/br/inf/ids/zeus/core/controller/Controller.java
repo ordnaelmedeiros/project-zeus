@@ -2,6 +2,7 @@ package br.inf.ids.zeus.core.controller;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import br.inf.ids.zeus.core.dao.EntityManagerUtil;
+import br.inf.ids.zeus.core.entity.CampoInfo;
 import br.inf.ids.zeus.core.enums.EnumSiglaDescricao;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -49,6 +52,31 @@ public abstract class Controller<Entidade> {
 		
 	}
 	
+	private Field getFieldId(Class<?> clazz) {
+		Field[] campos = getClasse().getDeclaredFields();
+		for (Field field : campos) {
+			Id pk = field.getAnnotation(Id.class);
+			if (pk!=null) {
+				return field;
+			}
+		}
+		return null;
+	}
+	
+	private List<Field> getFieldDescricao(Class<?> clazz) {
+		
+		List<Field> fields = new ArrayList<>();
+		
+		Field[] campos = clazz.getDeclaredFields();
+		for (Field field : campos) {
+			CampoInfo cInfo = field.getAnnotation(CampoInfo.class);
+			if (cInfo!=null && cInfo.isDescricao()) {
+				fields.add(field);
+			}
+		}
+		return fields;
+	}
+	
 	@GET
 	@Path("/estrutura")
 	public String estrutura() {
@@ -63,8 +91,10 @@ public abstract class Controller<Entidade> {
 			texto += "\n\t" + field.getName() + ":" + field.getType().getSimpleName();
 			
 			Column coluna = field.getAnnotation(Column.class);
+			ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
 			Id pk = field.getAnnotation(Id.class);
 			Enumerated enumerado = field.getAnnotation(Enumerated.class);
+			CampoInfo cInfo = field.getAnnotation(CampoInfo.class);
 			
 			
 			if (coluna!=null) {
@@ -84,6 +114,47 @@ public abstract class Controller<Entidade> {
 				if (!coluna.nullable()) {
 					texto += " NOT NULL ";
 				}
+				
+			}
+			
+			if (manyToOne!=null) {
+				
+				texto += "(";
+				
+				Field codigo = this.getFieldId(field.getType());
+				if (codigo!=null) {
+					texto += codigo.getName() +":";
+					CampoInfo info = codigo.getAnnotation(CampoInfo.class);
+					
+					if (info!=null) {
+						texto += info.descricao();
+					} else {
+						texto += "Código";
+					}
+					texto += "; ";
+					
+					List<Field> fieldsDescricao = this.getFieldDescricao(field.getType());
+					boolean first = true;
+					for (Field field2 : fieldsDescricao) {
+						
+						if (first) {
+							first = false;
+						} else {
+							texto += ", ";
+						}
+						
+						texto += field2.getName() + ":";
+						
+						CampoInfo info2 = field2.getAnnotation(CampoInfo.class);
+						if (info2!=null) {
+							texto += info2.descricao();
+						}
+						
+					}
+					
+				}
+				
+				texto += ")";
 				
 			}
 			
@@ -115,6 +186,12 @@ public abstract class Controller<Entidade> {
 					texto += "]";
 				}
 				
+			}
+			
+			if (cInfo!=null) {
+				texto += " -- " + cInfo.descricao();
+			} else if (pk!=null) {
+				texto += " -- Código";
 			}
 			
 		}

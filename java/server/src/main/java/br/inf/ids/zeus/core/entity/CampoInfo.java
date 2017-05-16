@@ -7,6 +7,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Coluna {
+public @interface CampoInfo {
 
+	
+	public String descricao();
+	public boolean isDescricao() default false;
+	
 }
