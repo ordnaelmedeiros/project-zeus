@@ -25,10 +25,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import br.inf.ids.zeus.core.dao.EntityManagerUtil;
+import br.inf.ids.zeus.core.entity.Campo;
 import br.inf.ids.zeus.core.entity.CampoInfo;
+import br.inf.ids.zeus.core.entity.SiglaDescricao;
+import br.inf.ids.zeus.core.entity.Tabela;
 import br.inf.ids.zeus.core.enums.EnumSiglaDescricao;
 
-@Produces(MediaType.APPLICATION_JSON)
+//@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json;charset=UTF-8")
 @Consumes(MediaType.APPLICATION_JSON)
 public abstract class Controller<Entidade> {
 	
@@ -79,16 +83,109 @@ public abstract class Controller<Entidade> {
 	
 	@GET
 	@Path("/estrutura")
-	public String estrutura() {
+	public Tabela estrutura() {
 		
-		String texto = " --> ";
+		Tabela tabela = new Tabela();
+		tabela.setNome(getClasse().getSimpleName());
 		
-		String nomeclasse = getClasse().getSimpleName();
-		texto += nomeclasse;
+		List<Campo> campos = new ArrayList<>();
 		
+		Field[] fields = getClasse().getDeclaredFields();
+		for (Field field : fields) {
+			
+			Campo campo = new Campo();
+			campo.setNomeFisico(field.getName());
+			campo.setTipo(field.getType().getSimpleName());
+			
+			if (field.isAnnotationPresent(Id.class)) {
+				campo.setIsPk(true);
+				campo.setDescricao("Código");
+			}
+			
+			CampoInfo cInfo = field.getAnnotation(CampoInfo.class);
+			if (cInfo!=null) {
+				campo.setDescricao(cInfo.descricao());
+			}
+			
+			Column coluna = field.getAnnotation(Column.class);
+			if (coluna!=null) {
+				campo.setNullable(coluna.nullable());
+				
+				if (field.getType().equals(String.class)) {
+					if (!coluna.columnDefinition().equalsIgnoreCase("TEXT")) {
+						campo.setTamanho(coluna.length());
+					}
+				} else if (field.getType().equals(BigDecimal.class)) {
+					campo.setPrecisao(coluna.precision());
+					campo.setEscala(coluna.scale());
+					
+				}
+				
+			}
+			
+			Enumerated enumerado = field.getAnnotation(Enumerated.class);
+			if (enumerado!=null) {
+				if (Arrays.asList(field.getType().getInterfaces()).contains(EnumSiglaDescricao.class)) {
+					
+					campo.setEnumSiglaDescricao(new ArrayList<>());
+					
+					@SuppressWarnings("unchecked")
+					List<EnumSiglaDescricao> list = (List<EnumSiglaDescricao>)Arrays.asList(field.getType().getEnumConstants());
+					int id = 0;
+					for (EnumSiglaDescricao enumSiglaDescricao : list) {
+						SiglaDescricao sd = new SiglaDescricao();
+						sd.setId(id++);
+						sd.setSigla(enumSiglaDescricao.getSigla());
+						sd.setDescricao(enumSiglaDescricao.getDescricao());
+						campo.getEnumSiglaDescricao().add(sd);
+					}
+					
+				}
+			}
+			
+			
+			ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+			if (manyToOne!=null) {
+				
+				campo.setCamposPesquisa(new ArrayList<>());
+				
+				Field codigo = this.getFieldId(field.getType());
+				CampoInfo codigoInfo = codigo.getAnnotation(CampoInfo.class);
+				Campo campoCodigo = new Campo();
+				campoCodigo.setNomeFisico(codigo.getName());
+				if (codigoInfo!=null) {
+					campoCodigo.setDescricao(codigoInfo.descricao());
+				} else {
+					campoCodigo.setDescricao("Código");
+				}
+				
+				campo.getCamposPesquisa().add(campoCodigo);
+				
+				List<Field> fieldsDescricao = this.getFieldDescricao(field.getType());
+				for (Field fieldDesc : fieldsDescricao) {
+					CampoInfo descInfo = fieldDesc.getAnnotation(CampoInfo.class);
+					Campo campoDesc = new Campo();
+					campoDesc.setNomeFisico(fieldDesc.getName());
+					if (descInfo!=null) {
+						campoDesc.setDescricao(descInfo.descricao());
+					}
+					campo.getCamposPesquisa().add(campoDesc);
+				}
+				
+			}
+			
+			
+			campos.add(campo);
+			
+		}
+		
+		tabela.setCampos(campos);
+		
+		return tabela;
+		
+		/*
 		Field[] campos = getClasse().getDeclaredFields();
 		for (Field field : campos) {
-			texto += "\n\t" + field.getName() + ":" + field.getType().getSimpleName();
 			
 			Column coluna = field.getAnnotation(Column.class);
 			ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
@@ -96,26 +193,6 @@ public abstract class Controller<Entidade> {
 			Enumerated enumerado = field.getAnnotation(Enumerated.class);
 			CampoInfo cInfo = field.getAnnotation(CampoInfo.class);
 			
-			
-			if (coluna!=null) {
-				
-				System.out.println("teste ");
-				
-				if (field.getType().equals(String.class)) {
-					if (!coluna.columnDefinition().equalsIgnoreCase("TEXT")) {
-						texto += " (" + coluna.length() + ")";
-					}
-				} else if (field.getType().equals(BigDecimal.class)) {
-					
-					texto += "("+coluna.precision()+","+coluna.scale() + ")";
-					
-				}
-				
-				if (!coluna.nullable()) {
-					texto += " NOT NULL ";
-				}
-				
-			}
 			
 			if (manyToOne!=null) {
 				
@@ -158,45 +235,9 @@ public abstract class Controller<Entidade> {
 				
 			}
 			
-			if (pk!=null) {
-				texto += " PK ";
-			}
-			
-			if (enumerado!=null) {
-				
-				if (Arrays.asList(field.getType().getInterfaces()).contains(EnumSiglaDescricao.class)) {
-					
-					@SuppressWarnings("unchecked")
-					List<EnumSiglaDescricao> list = (List<EnumSiglaDescricao>)Arrays.asList(field.getType().getEnumConstants());
-					texto += "[";
-					boolean first = true;
-					for (EnumSiglaDescricao enumSiglaDescricao : list) {
-						
-						if (!first) {
-							texto += ", ";
-						} else {
-							first = false;
-						}
-						
-						texto += enumSiglaDescricao.toString() + "("+enumSiglaDescricao.getSigla()+" - "+enumSiglaDescricao.getDescricao()+")";
-						
-						
-					}
-						
-					texto += "]";
-				}
-				
-			}
-			
-			if (cInfo!=null) {
-				texto += " -- " + cInfo.descricao();
-			} else if (pk!=null) {
-				texto += " -- Código";
-			}
-			
 		}
 		
-		return texto;
+		*/
 	}
 	
 	@GET
